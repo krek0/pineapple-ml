@@ -8,10 +8,11 @@ let derivation = [
     (E,[E;E']);
     (E,[E;LOp "";E']);
     (E,[E']);
-    (E,[LLeftPar;E;LComma;E;LRightPar]);
+    (E',[LLeftPar;E;LComma;E;LRightPar]);
     (E',[LConst ""]);
     (E',[LVar ""]);
     (E',[LLeftPar;E;LRightPar]);
+    (E,[LOp "";E])
   ]
 
 let start = E
@@ -203,6 +204,7 @@ let rec evalue t = match t with
   | T (8,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
   | T (9,l,[T(_,LVar s,[])]) -> Var s
   | T (10,_,[_;t;_]) -> evalue t
+  | T (11,_,[T(_,LOp s,[]);t]) -> App(Op s,evalue t)
   | T(i,_,_) -> failwith "make evalue"
 
 let () =
