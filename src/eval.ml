@@ -65,6 +65,6 @@ let rec eval e = match e with
 
 (*
 let plus_1 = Fun("x",App( Op("+"),Pair(Var("x"),Const(1))));;
-(*let fix = Fun("f",App(Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y"))))),Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y")))))));;*)
+let fix = Fun("f",App(Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y"))))),Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y")))))));;
 let fact = recc "fact" "n" @@ iff (App(Op "=", Pair(Var "n", Const 0))) (Const 1) (App(Op "*", Pair(Var "n",App(Var "fact",App(Op "+",Pair(Var "n",Const (-1)))))))
 *)

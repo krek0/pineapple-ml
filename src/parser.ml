@@ -221,6 +221,3 @@ let rec evalue t = match t with
   | T (13,_,[_;t;_]) -> evalue t
   | T (14,_,[_;t1;_;t2;_]) -> Pair (evalue t1, evalue t2)
   | T(i,_,_) -> failwith "make evalue"
-
-let () =
-  init_parser ();
