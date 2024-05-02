@@ -201,23 +201,23 @@ let make_tree input =
 let recc f x e = App(Op "opfix", Fun(f,Fun(x,e)))
 let iff c t e = App(Op "opif", Pair(c,Pair(Fun("",t),Fun("",e))))
 
-let rec evalue t = match t with
-  | T (0,_,[t]) -> evalue t
-  | T (1,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,evalue t1, evalue t2)
-  | T (2,_,[_;t1;_;t2;_;t3]) -> iff (evalue t1) (evalue t2) (evalue t3)
-  | T (3,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,evalue t)
-  | T (4,_,[_;T(_,LVar s1, []);T(_,LVar s2, []);_;t]) -> recc s1 s2 (evalue t)
-  | T (5,_,[t1;T(_,LOp0 s,[]);t2]) -> App(Op s,Pair(evalue t1,evalue t2))
+let rec parse t = match t with
+  | T (0,_,[t]) -> parse t
+  | T (1,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,parse t1, parse t2)
+  | T (2,_,[_;t1;_;t2;_;t3]) -> iff (parse t1) (parse t2) (parse t3)
+  | T (3,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,parse t)
+  | T (4,_,[_;T(_,LVar s1, []);T(_,LVar s2, []);_;t]) -> recc s1 s2 (parse t)
+  | T (5,_,[t1;T(_,LOp0 s,[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
   
-  | T (6,_,[t]) -> evalue t
-  | T (7,_,[t1;T(_,LOp1 s,[]);t2]) -> App(Op s,Pair(evalue t1,evalue t2))
+  | T (6,_,[t]) -> parse t
+  | T (7,_,[t1;T(_,LOp1 s,[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
 
-  | T (8,_,[t]) -> evalue t
-  | T (9,_,[T(_,LOp0 s,[]);t]) -> App(Op s,evalue t)
-  | T (10,_,[t1;t2]) -> App(evalue t1,evalue t2)
+  | T (8,_,[t]) -> parse t
+  | T (9,_,[T(_,LOp0 s,[]);t]) -> App(Op s,parse t)
+  | T (10,_,[t1;t2]) -> App(parse t1,parse t2)
 
   | T (11,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
   | T (12,l,[T(_,LVar s,[])]) -> Var s
-  | T (13,_,[_;t;_]) -> evalue t
-  | T (14,_,[_;t1;_;t2;_]) -> Pair (evalue t1, evalue t2)
-  | T(i,_,_) -> failwith "make evalue"
+  | T (13,_,[_;t;_]) -> parse t
+  | T (14,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
+  | T(i,_,_) -> failwith "make parse"

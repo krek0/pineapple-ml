@@ -140,7 +140,7 @@ let _next_lexem s i =
     in
     aux i 0;;
 
-let analyse s =
+let lex s =
   let n = String.length s in
   let rec aux acc i =
     if i >= n then
