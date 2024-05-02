@@ -2,8 +2,9 @@ Symboles non terminaux : {E, F, G, H}
 Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, (, ), rec}
 Symbole de départ : E
 
-Les op1 ont une priorité supérieur aux op0
-les applications one une priorité supérieurs aux opérateurs
+Les op1 (*,/,%,etc) ont une priorité supérieur aux op0 (+,-,=,etc)
+les applications one une priorité supérieurs à tous les opérateurs
+prioriété de la gauche vers la droite an cas d'égalité de priorité
 
 Derivations :
 E -> | F
