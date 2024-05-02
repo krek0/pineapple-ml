@@ -1,7 +1,3 @@
-#load "lexer.cmo"
-#load "parser.cmo"
-#load "eval.cmo"
-
 open Parser
 open Lexer
 open Eval
