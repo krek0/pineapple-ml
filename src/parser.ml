@@ -1,18 +1,25 @@
 open Type
 
 let derivation = [
-    (E,[LLet;LVar "";LOp "=";E;LIn;E]);
+    (E,[F]);
+    (E,[LLet;LVar "";LOp0 "=";E;LIn;E]);
     (E,[LIf;E;LThen;E;LElse;E]);
     (E,[LFun;LVar "";LArrow;E]);
     (E,[LRec;LVar "";LVar "";LArrow;E]);
-    (E,[E;E']);
-    (E,[E;LOp "";E']);
-    (E,[E']);
-    (E',[LLeftPar;E;LComma;E;LRightPar]);
-    (E',[LConst ""]);
-    (E',[LVar ""]);
-    (E',[LLeftPar;E;LRightPar]);
-    (E,[LOp "";E])
+    (E,[E;LOp0 "";F]);
+
+    (F,[G]);
+    (F,[F;LOp1 "";G]);
+    
+    (G,[H]);
+    (G,[LOp0 "";G]);
+    (G,[G;H]);
+
+  
+    (H,[LConst ""]);
+    (H,[LVar ""]);
+    (H,[LLeftPar;E;LRightPar]);
+    (H,[LLeftPar;E;LComma;E;LRightPar]);
   ]
 
 let start = E
@@ -21,14 +28,15 @@ let lexems = [
   End;
   LConst "";
   LVar "";
-  LOp "";
+  LOp0 "";
+  LOp1 "";
   LFun;
   LRec ; LArrow;
   LLet ; LIn;
   LIf ; LThen ; LElse;
   LLeftPar ; LRightPar ; LComma;
-  E ; E' ; S]
-let non_terminaux = [E;E';S]
+  E ; F; G; H ; S]
+let non_terminaux = [E;F;G;H;S]
 
 let derivation_a = Array.of_list derivation
 
@@ -78,7 +86,7 @@ let rec next_item item t =
     | _::tl -> aux acc tl
     | [] -> acc
   in
-  fermeture @@ fermeture @@ fermeture @@ aux [] item
+  fermeture @@ fermeture @@ fermeture @@ fermeture @@ fermeture @@ aux [] item
 
 
 let add_one_transition item l i =
@@ -147,14 +155,15 @@ let read li =
       (*On lit l'élément en haut de la pile et on dépile l'entrée*)
       let i = Stack.top pile in
       let e = Stack.top input in
-      (*Enleve les parametres aux vars,csts,op pour utiliser les derivations génériques*)
+      (*Enleve les parametres aux vars,csts,op pour utiliser les règles derivations génériques*)
       let e' = match e with
         | LVar _ -> LVar ""
-        (*Si = est l'opérateur d'atribution on change rien*)
-        | LOp "=" -> (match Hashtbl.find_opt parser.actions (i,e) with
-                          | Some _ -> LOp "="
-                          | None -> LOp "")
-        | LOp _ -> LOp ""
+        (*Si = est l'opérateur d'atribution on le garde*)
+        | LOp0 "=" -> (match Hashtbl.find_opt parser.actions (i,e) with
+                          | Some _ -> LOp0 "="
+                          | None -> LOp0 "")
+        | LOp0 _ -> LOp0 ""
+        | LOp1 _ -> LOp1 ""
         | LConst _ -> LConst ""
         | _ -> e
       in
@@ -174,15 +183,15 @@ type tree = T of int*lexem*(tree list)
 let make_tree input =
   let s = read input in
   let named = Stack.create () in
-  List.iter (fun e -> match e with | LOp _ |LVar _ |LConst _ -> Stack.push e named | _ -> ()) input;
+  List.iter (fun e -> match e with | LOp0 _ | LOp1 _ | LVar _ |LConst _ -> Stack.push e named | _ -> ()) input;
   let rec aux e =
     let i = Stack.pop s in
     let l = List.map (fun e ->
                       if List.mem e non_terminaux then
                         aux e
                      else match e with
-                      | LOp "=" -> ignore @@ Stack.pop named; T(-1,e,[])
-                      | LVar "" | LConst "" | LOp "" -> T(-1,Stack.pop named,[])
+                      | LOp0 "=" -> ignore @@ Stack.pop named; T(-1,e,[])
+                      | LVar "" | LConst "" | LOp0 "" | LOp1 "" -> T(-1,Stack.pop named,[])
                       | _ -> T(-1,e,[]))
             @@ List.rev @@ snd derivation_a.(i) in
     T(i,e,List.rev l)
@@ -193,18 +202,24 @@ let recc f x e = App(Op "opfix", Fun(f,Fun(x,e)))
 let iff c t e = App(Op "opif", Pair(c,Pair(Fun("",t),Fun("",e))))
 
 let rec evalue t = match t with
-  | T (0,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,evalue t1, evalue t2)
-  | T (1,_,[_;t1;_;t2;_;t3]) -> iff (evalue t1) (evalue t2) (evalue t3)
-  | T (2,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,evalue t)
-  | T (3,_,[_;T(_,LVar s1, []);T(_,LVar s2, []);_;t]) -> recc s1 s2 (evalue t)
-  | T (4,_,[t1;t2]) -> App(evalue t1,evalue t2)
-  | T (5,_,[t1;T(_,LOp s,[]);t2]) -> App(Op s,Pair(evalue t1,evalue t2))
+  | T (0,_,[t]) -> evalue t
+  | T (1,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,evalue t1, evalue t2)
+  | T (2,_,[_;t1;_;t2;_;t3]) -> iff (evalue t1) (evalue t2) (evalue t3)
+  | T (3,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,evalue t)
+  | T (4,_,[_;T(_,LVar s1, []);T(_,LVar s2, []);_;t]) -> recc s1 s2 (evalue t)
+  | T (5,_,[t1;T(_,LOp0 s,[]);t2]) -> App(Op s,Pair(evalue t1,evalue t2))
+  
   | T (6,_,[t]) -> evalue t
-  | T (7,_,[_;t1;_;t2;_]) -> Pair (evalue t1, evalue t2)
-  | T (8,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
-  | T (9,l,[T(_,LVar s,[])]) -> Var s
-  | T (10,_,[_;t;_]) -> evalue t
-  | T (11,_,[T(_,LOp s,[]);t]) -> App(Op s,evalue t)
+  | T (7,_,[t1;T(_,LOp1 s,[]);t2]) -> App(Op s,Pair(evalue t1,evalue t2))
+
+  | T (8,_,[t]) -> evalue t
+  | T (9,_,[T(_,LOp0 s,[]);t]) -> App(Op s,evalue t)
+  | T (10,_,[t1;t2]) -> App(evalue t1,evalue t2)
+
+  | T (11,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
+  | T (12,l,[T(_,LVar s,[])]) -> Var s
+  | T (13,_,[_;t;_]) -> evalue t
+  | T (14,_,[_;t1;_;t2;_]) -> Pair (evalue t1, evalue t2)
   | T(i,_,_) -> failwith "make evalue"
 
 let () =

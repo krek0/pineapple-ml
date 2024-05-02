@@ -16,11 +16,14 @@ let lexique = [
     "("; ")"; ","
   ]
 
-let operators = [
-    "+"; "-"; "*"; "/"; "%";
+let operators_0 = [
+    "+"; "-";
     "=";
     "fst"; "snd";
-    "opif"
+  ]
+
+let operators_1 = [
+    "*"; "/"; "%";
   ]
 
 let vars = [
@@ -85,7 +88,8 @@ let init_lexer () =
   List.iter2 _add_one_lexem lexique keywords;
   
   (*Operators*)
-  List.iter (fun s -> _add_one_lexem s @@ LOp s) operators;
+  List.iter (fun s -> _add_one_lexem s @@ LOp0 s) operators_0;
+  List.iter (fun s -> _add_one_lexem s @@ LOp1 s) operators_1;
 
   (*vars*)
   lexeur.nb <- lexeur.nb + 1;
