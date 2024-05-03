@@ -8,8 +8,8 @@ let rec sub e x v = match e with
   | Fun (y,e1) -> Fun(y,sub e1 x v)
   | App (e1,e2) -> App(sub e1 x v, sub e2 x v)
   | Pair (e1,e2) -> Pair(sub e1 x v, sub e2 x v)
-  | Let(y,e1,e2) when y = x -> Let(x,sub e1 x v,e2)
-  | Let(y,e1,e2) -> Let(x,sub e1 x v, sub e2 x v)
+  | Let(y,e1,e2) when y = x -> Let(y,sub e1 x v,e2)
+  | Let(y,e1,e2) -> Let(y,sub e1 x v, sub e2 x v)
 
 let rec eval e = match e with
   | Const _ | Op _ | Fun _ -> e
