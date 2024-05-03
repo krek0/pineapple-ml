@@ -11,7 +11,7 @@ Then you can do `run <code>`
 # Code example
 `let f = fun x -> x+12 in f 12`
 
-`let fact = rec fact n -> if n = 0 then 1 else n * fact (n-1) in fact 10`
+`let rec fact = fun n -> if n = 0 then 1 else n * fact (n-1) in fact 10`
 
 # Todo
 - [ ] Cleanup

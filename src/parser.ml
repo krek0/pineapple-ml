@@ -5,7 +5,7 @@ let derivation = [
     (E,[LLet;LVar "";LOp0 "=";E;LIn;E]);
     (E,[LIf;E;LThen;E;LElse;E]);
     (E,[LFun;LVar "";LArrow;E]);
-    (E,[LRec;LVar "";LVar "";LArrow;E]);
+    (E,[LLet;LRec;LVar "";LOp0 "=";E;LIn;E]);
     (E,[E;LOp0 "";F]);
 
     (F,[G]);
@@ -206,7 +206,7 @@ let rec parse t = match t with
   | T (1,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,parse t1, parse t2)
   | T (2,_,[_;t1;_;t2;_;t3]) -> iff (parse t1) (parse t2) (parse t3)
   | T (3,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,parse t)
-  | T (4,_,[_;T(_,LVar s1, []);T(_,LVar s2, []);_;t]) -> recc s1 s2 (parse t)
+  | T (4,_,[_;_;T(_,LVar f, []);_;t1;_;t2]) -> Let (f,App(Op "opfix",Fun(f,parse t1)),parse t2)
   | T (5,_,[t1;T(_,LOp0 s,[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
   
   | T (6,_,[t]) -> parse t
