@@ -1,5 +1,6 @@
 # Pineapple ML
-A small "mini" ml implementation in ocaml
+A small "mini ml" interpreter in ocaml
+
 The project is not yet usable
 
 # How to use
