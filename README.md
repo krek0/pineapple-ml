@@ -17,3 +17,4 @@ Then you can do `run <code>`
 - [ ] Cleanup
 - [ ] Add type support
 - [ ] Make the binary usable with args
+- [ ] Add error messages
