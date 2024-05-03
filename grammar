@@ -1,3 +1,15 @@
+t := fun t -> t
+	 let t = t in t
+	 let rec t = t in t
+	 if t then t else t
+	 var
+	 const
+	 op t
+	 t op t
+	 t t
+	 (t)
+	 (t,t)
+
 Symboles non terminaux : {E, F, G, H}
 Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec}
 Symbole de départ : E
