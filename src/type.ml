@@ -11,11 +11,10 @@ type lexem =
   | End | LNothing
   | LConst of string
   | LVar of string
-  | LOp0 of string
-  | LOp1 of string
+  | LOp of int*string (*the int is the prority, higher for more priority*)
   | LFun
   | LRec | LArrow
   | LLet | LIn
   | LIf | LThen | LElse
   | LLeftPar | LRightPar | LComma
-  | E | F | G | H | S
+  | E | F of int| G | S

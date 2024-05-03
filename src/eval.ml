@@ -43,6 +43,22 @@ let rec eval e = match e with
           match eval e2 with
             | Pair(Const n1, Const n2) -> Const(if n1=n2 then 1 else 0)
             | _ -> failwith "eval =" )
+        | Op "<" -> (
+          match eval e2 with
+            | Pair(Const n1, Const n2) -> Const(if n1<n2 then 1 else 0)
+            | _ -> failwith "eval <" )
+        | Op "<=" -> (
+          match eval e2 with
+            | Pair(Const n1, Const n2) -> Const(if n1<=n2 then 1 else 0)
+            | _ -> failwith "eval <=" )
+        | Op ">" -> (
+          match eval e2 with
+            | Pair(Const n1, Const n2) -> Const(if n1>n2 then 1 else 0)
+            | _ -> failwith "eval >" )
+        | Op ">=" -> (
+          match eval e2 with
+            | Pair(Const n1, Const n2) -> Const(if n1>=n2 then 1 else 0)
+            | _ -> failwith "eval >=" )
         | Op "fst" -> (
           match eval e2 with
             | Pair(v1,v2) -> v1

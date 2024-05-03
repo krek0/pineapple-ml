@@ -1,11 +1,12 @@
 Symboles non terminaux : {E, F, G, H}
-Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, (, ), rec}
+Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec}
 Symbole de départ : E
 
 Priorité du plus prioritaire au moins prioritaires
-- Opérateurs type 0 ex: + - =
-- Opérateurs type 1 ex: % / *
-- Applications et opérateurs préfixes ex: fst snd
+{>,>=,<,<=}
+{+,-}
+{%,/,*}
+Applications et opérateurs préfixes {fst,snd,-}
 
 Derivations :
 E -> | F
@@ -13,16 +14,23 @@ E -> | F
 	 | if E then E else E
 	 | fun var -> E
 	 | let rec var = E in E
-	 | E op0 F
+	 | E op F
 	
-F -> | G
-	 | F op1 G
-	
-G -> | H
-	 | op0 G
-	 | G H // Application
+F_1 -> | F_2
+	   | F_1 op F_2
 
-H -> const
+...
+
+F_k -> | F_(k+1)
+	   | F_k op F_(k+1)
+	
+...
+
+F_n -> | G
+	   | op F_n
+	   | H I // Application
+
+G -> const
 	| var
 	| (E)
 	| (E,E)

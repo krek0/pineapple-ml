@@ -1,26 +1,35 @@
 open Type
 
+(*number of priority*)
+let max_op = List.length Lexer.operators - 1
+(*List de tout les non terminaux qui seront*)
+(*nécessaire pour les derivations*)
+let f = List.init max_op (fun i -> F (i+1))
+let op = List.init (max_op+1) (fun i -> LOp (i,""))
+
 let derivation = [
-    (E,[F]);
-    (E,[LLet;LVar "";LOp0 "=";E;LIn;E]);
+    (E,[F 1]);
+    (E,[LLet;LVar "";LOp (0,"=");E;LIn;E]);
     (E,[LIf;E;LThen;E;LElse;E]);
     (E,[LFun;LVar "";LArrow;E]);
-    (E,[LLet;LRec;LVar "";LOp0 "=";E;LIn;E]);
-    (E,[E;LOp0 "";F]);
+    (E,[LLet;LRec;LVar "";LOp (0,"=");E;LIn;E]);
+    (E,[E;LOp (0,"");F 1]);
 
-    (F,[G]);
-    (F,[F;LOp1 "";G]);
-    
-    (G,[H]);
-    (G,[LOp0 "";G]);
-    (G,[G;H]);
-
+    (F (max_op),[G]);
+    (F (max_op),[LOp (max_op,"");F max_op]);
+    (F (max_op),[LOp (1,"-");F max_op]); (*negatives numbers*)
+    (F (max_op),[F max_op;G]);
   
-    (H,[LConst ""]);
-    (H,[LVar ""]);
-    (H,[LLeftPar;E;LRightPar]);
-    (H,[LLeftPar;E;LComma;E;LRightPar]);
+    (G,[LConst ""]);
+    (G,[LVar ""]);
+    (G,[LLeftPar;E;LRightPar]);
+    (G,[LLeftPar;E;LComma;E;LRightPar]);
   ]
+
+let derivation = derivation @ List.concat @@ List.init (max_op-1)
+                              (fun i -> let i = i + 1 in
+                               [(F i,[F (i+1)]);
+                                (F i,[F i;LOp (i,"");F (i+1)])])
 
 let start = E
 
@@ -28,15 +37,13 @@ let lexems = [
   End;
   LConst "";
   LVar "";
-  LOp0 "";
-  LOp1 "";
   LFun;
   LRec ; LArrow;
   LLet ; LIn;
   LIf ; LThen ; LElse;
   LLeftPar ; LRightPar ; LComma;
-  E ; F; G; H ; S]
-let non_terminaux = [E;F;G;H;S]
+  E ; G; S]@op@f
+let non_terminaux = [E;G;S]@f
 
 let derivation_a = Array.of_list derivation
 
@@ -159,11 +166,9 @@ let read li =
       let e' = match e with
         | LVar _ -> LVar ""
         (*Si = est l'opérateur d'atribution on le garde*)
-        | LOp0 "=" -> (match Hashtbl.find_opt parser.actions (i,e) with
-                          | Some _ -> LOp0 "="
-                          | None -> LOp0 "")
-        | LOp0 _ -> LOp0 ""
-        | LOp1 _ -> LOp1 ""
+        | LOp (j, s) -> (match Hashtbl.find_opt parser.actions (i,e) with
+                          | Some _ -> e
+                          | None -> LOp (j, "") )
         | LConst _ -> LConst ""
         | _ -> e
       in
@@ -183,15 +188,14 @@ type tree = T of int*lexem*(tree list)
 let make_tree input =
   let s = read input in
   let named = Stack.create () in
-  List.iter (fun e -> match e with | LOp0 _ | LOp1 _ | LVar _ |LConst _ -> Stack.push e named | _ -> ()) input;
+  List.iter (fun e -> match e with LOp _ | LVar _ |LConst _ -> Stack.push e named | _ -> ()) input;
   let rec aux e =
     let i = Stack.pop s in
     let l = List.map (fun e ->
                       if List.mem e non_terminaux then
                         aux e
                      else match e with
-                      | LOp0 "=" -> ignore @@ Stack.pop named; T(-1,e,[])
-                      | LVar "" | LConst "" | LOp0 "" | LOp1 "" -> T(-1,Stack.pop named,[])
+                      | LVar "" | LConst "" | LOp _ -> T(-1,Stack.pop named,[])
                       | _ -> T(-1,e,[]))
             @@ List.rev @@ snd derivation_a.(i) in
     T(i,e,List.rev l)
@@ -202,22 +206,22 @@ let make_tree input =
 let iff c t e = App(Op "opif", Pair(c,Pair(Fun("",t),Fun("",e))))
 
 let rec parse t = match t with
-  | T (0,_,[t]) -> parse t
   | T (1,_,[_;T(_,LVar s,[]);_;t1;_;t2]) -> Let (s,parse t1, parse t2)
   | T (2,_,[_;t1;_;t2;_;t3]) -> iff (parse t1) (parse t2) (parse t3)
   | T (3,_,[_;T(_,LVar s,[]);_;t]) -> Fun (s,parse t)
   | T (4,_,[_;_;T(_,LVar f, []);_;t1;_;t2]) -> Let (f,App(Op "opfix",Fun(f,parse t1)),parse t2)
-  | T (5,_,[t1;T(_,LOp0 s,[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
+  | T (5,_,[t1;T(_,LOp (0,s),[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
   
-  | T (6,_,[t]) -> parse t
-  | T (7,_,[t1;T(_,LOp1 s,[]);t2]) -> App(Op s,Pair(parse t1,parse t2))
+  | T (7,_,[T(_,LOp (_,s),[]);t]) -> App(Op s,parse t)
+  | T (8,_,[T(_,LOp (_,s),[]);t]) -> App(Op s,parse t)
+  | T (9,_,[t1;t2]) -> App(parse t1,parse t2)
 
-  | T (8,_,[t]) -> parse t
-  | T (9,_,[T(_,LOp0 s,[]);t]) -> App(Op s,parse t)
-  | T (10,_,[t1;t2]) -> App(parse t1,parse t2)
-
-  | T (11,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
-  | T (12,l,[T(_,LVar s,[])]) -> Var s
-  | T (13,_,[_;t;_]) -> parse t
-  | T (14,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
+  | T (10,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
+  | T (11,l,[T(_,LVar s,[])]) -> Var s
+  | T (12,_,[_;t;_]) -> parse t
+  | T (13,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
+  
+  | T (_,_,[t1;T(_,LOp (_,s),[]);t2]) -> App (Op s, Pair(parse t1, parse t2))
+  | T (_,_,[t]) -> parse t
+  
   | T(i,_,_) -> failwith "make parse"
