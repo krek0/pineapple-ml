@@ -1,6 +1,6 @@
 # Pineapple ML
 A small "mini" ml implementation in ocaml
-The project is not yet super usable
+The project is not yet usable
 
 # How to use
 Currently you have to do `make run` with utop installed on your computer
