@@ -25,6 +25,7 @@ let rec eval e = match e with
         | Op "-" -> (
           match eval e2 with
             | Pair(Const n1, Const n2) -> Const(n1-n2)
+            | Const n -> Const(-n)
             | _ -> failwith "eval -" )
         | Op "*" -> (
           match eval e2 with
