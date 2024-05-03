@@ -198,7 +198,7 @@ let make_tree input =
   in
   aux start;;
 
-let recc f x e = App(Op "opfix", Fun(f,Fun(x,e)))
+(*if c then t else e*)
 let iff c t e = App(Op "opif", Pair(c,Pair(Fun("",t),Fun("",e))))
 
 let rec parse t = match t with
