@@ -5,6 +5,7 @@ let keywords = [
   LRec; LArrow;
   LLet; LIn;
   LIf; LThen; LElse;
+  LTrue; LFalse;
   LLeftPar; LRightPar; LComma
 ]
 
@@ -13,6 +14,7 @@ let lexique = [
     "rec"; "->";
     "let"; "in";
     "if"; "then"; "else";
+    "true"; "false";
     "("; ")"; ","
   ]
 

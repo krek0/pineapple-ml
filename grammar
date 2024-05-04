@@ -11,7 +11,7 @@ t := fun t -> t
 	 (t,t)
 
 Symboles non terminaux : {E, F, G, H}
-Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec}
+Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec, true, false}
 Symbole de départ : E
 
 Priorité du plus prioritaire au moins prioritaires
@@ -44,5 +44,7 @@ F_n -> | G
 
 G -> const
 	| var
+	| true
+	| false
 	| (E)
 	| (E,E)

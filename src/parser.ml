@@ -22,6 +22,8 @@ let derivation = [
   
     (G,[LConst ""]);
     (G,[LVar ""]);
+    (G,[LTrue]);
+    (G,[LFalse]);
     (G,[LLeftPar;E;LRightPar]);
     (G,[LLeftPar;E;LComma;E;LRightPar]);
   ]
@@ -218,8 +220,10 @@ let rec parse t = match t with
 
   | T (10,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
   | T (11,l,[T(_,LVar s,[])]) -> Var s
-  | T (12,_,[_;t;_]) -> parse t
-  | T (13,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
+  | T (12,l,[T(_,LTrue,[])]) -> True
+  | T (13,l,[T(_,LFalse,[])]) -> True
+  | T (14,_,[_;t;_]) -> parse t
+  | T (15,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
   
   | T (_,_,[t1;T(_,LOp (_,s),[]);t2]) -> App (Op s, Pair(parse t1, parse t2))
   | T (_,_,[t]) -> parse t
