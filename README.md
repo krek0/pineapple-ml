@@ -6,7 +6,7 @@ The project is not yet usable
 # How to use
 Currently you have to do `make run` with utop installed on your computer
 
-Then you can do `run <code>`
+Then you can do `run "<code>"`
 
 # Code example
 `let f = fun x -> x+12 in f 12`
