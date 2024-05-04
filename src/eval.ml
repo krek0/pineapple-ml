@@ -18,6 +18,20 @@ let rec eval e = match e with
   | App (e1,e2) -> (
       match eval e1 with
         | Fun(x,e) -> eval @@ sub e x (eval e2)
+        | Op "&&" -> (
+          match eval e2 with
+            | Pair(False, False) -> False
+            | Pair(False, True) -> False
+            | Pair(True, False) -> False
+            | Pair(True, True) -> True
+            | _ -> failwith "eval &&" )
+        | Op "||" -> (
+          match eval e2 with
+            | Pair(False, False) -> False
+            | Pair(False, True) -> True
+            | Pair(True, False) -> True
+            | Pair(True, True) -> True
+            | _ -> failwith "eval ||" )
         | Op "+" -> (
           match eval e2 with
             | Pair(Const n1, Const n2) -> Const(n1+n2)
