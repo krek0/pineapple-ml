@@ -1,26 +1,32 @@
+simplified version:
+
 t := fun t -> t
 	 let t = t in t
 	 let rec t = t in t
 	 if t then t else t
 	 var
 	 const
+	 true
+	 false
 	 op t
 	 t op t
 	 t t
 	 (t)
 	 (t,t)
 
-Symboles non terminaux : {E, F, G, H}
-Symboles terminaux : {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec, true, false}
-Symbole de départ : E
+Non-terminal symbols: {E, F, G, H}
+Terminal symbols: {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, (, ), rec, true, false}
+Starting symbol: E
 
-Priorité du plus prioritaire au moins prioritaires
+Priority from highest to lowest:
 {>,>=,<,<=}
 {+,-}
 {%,/,*}
-Applications et opérateurs préfixes {fst,snd,-}
+{fst,snd,-} (prefix)
 
-Derivations :
+Applications share the same priority as prefixes.
+
+Derivations:
 E -> | F
 	 | let var = E in E
 	 | if E then E else E
@@ -33,6 +39,7 @@ F_1 -> | F_2
 
 ...
 
+(1 <= k < n)
 F_k -> | F_(k+1)
 	   | F_k op F_(k+1)
 	
