@@ -16,7 +16,8 @@ Then you can do `run "<code>"`
 `let a = 4 in let f = fun x -> x + 1 in f a`
 
 # Todo
-- [ ] Cleanup
+- [x] Cleanup
+- [ ] Change the way of handle operator priority
 - [ ] Add type support
 - [ ] Make the binary usable with args
 - [ ] Add error messages
