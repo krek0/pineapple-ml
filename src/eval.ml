@@ -18,19 +18,20 @@ let rec eval e = match e with
   | App (e1,e2) -> (
       match eval e1 with
         | Fun(x,e) -> eval @@ sub e x (eval e2)
+        (*Lazy evaluation for && and ||*)
         | Op "&&" -> (
-          match eval e2 with
-            | Pair(False, False) -> False
-            | Pair(False, True) -> False
-            | Pair(True, False) -> False
-            | Pair(True, True) -> True
+          match e2 with
+            | Pair(f,s) -> (
+                if eval f = False then False
+                else if eval s = False then False else True
+              )
             | _ -> failwith "eval &&" )
         | Op "||" -> (
-          match eval e2 with
-            | Pair(False, False) -> False
-            | Pair(False, True) -> True
-            | Pair(True, False) -> True
-            | Pair(True, True) -> True
+          match e2 with
+            | Pair(f,s) -> (
+                if eval f = True then True
+                else if eval s = True then True else False
+              )
             | _ -> failwith "eval ||" )
         | Op "+" -> (
           match eval e2 with
@@ -81,8 +82,8 @@ let rec eval e = match e with
           match eval e2 with
             | Pair(v1,v2) -> v2
             | _ -> failwith "eval snd" )
-        | Op "opif" -> ( (*vtrue and vfalse are in a abstraction to freeze evaluation
-          before matching in order to evaluate only the selected branch after matching*)
+        (*Lazy evaluation by having vtrue and vfalse in abstraction*)
+        | Op "opif" -> (
           match eval e2 with
             | Pair(c, Pair(Fun(_,vtrue), Fun (_,vfalse))) -> if c = True then eval vtrue else eval vfalse
             | _ -> failwith "eval if" )
