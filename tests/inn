@@ -1,0 +1,6 @@
+let res =
+let a = 10 in let b = 5 in
+let sum = fun c -> c + a in
+sum b + a * b
+in
+res = 65

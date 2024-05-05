@@ -19,5 +19,6 @@ Then you can do `run "<code>"`
 - [x] Cleanup
 - [ ] Change the way of handle operator priority
 - [ ] Add type support
-- [ ] Make the binary usable with args
+- [x] Make the binary usable with args
+- [ ] Add argument to binary
 - [ ] Add error messages

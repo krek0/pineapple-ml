@@ -1,5 +1,5 @@
 MAIN := main.ml
-DEPS := type.ml eval.ml lexer.ml parser.ml
+DEPS := type.ml eval.ml lexer.ml parser.ml print.ml
 TMP_MAIN := /tmp/main_tmp.ml
 SRC := src
 OUT := builds

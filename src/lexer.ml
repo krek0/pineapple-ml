@@ -19,7 +19,7 @@ let lexique = [
   ]
 
 (*each sub-list represents progressively higher priorities*)
-let operators = [
+let prefix_operators = [
     ["&&";"||"];
     ["=";">"; ">="; "<"; "<="];
     ["+";"-"];
@@ -27,19 +27,28 @@ let operators = [
     ["fst";"snd"] (*prefix operators (except -)*)
   ]
 
+let infix_operators =
+  ["fst";"snd"]
+
 let vars = [
   'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';'u';'v';'w';'x';'y';'z';
   '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
   '_'
   ]
 
+let vars_start = [
+  'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';'u';'v';'w';'x';'y';'z';
+  ]
+
 let numbers = [
-  '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
+  '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';'_'
   ]
 
 let spaces = [
     ' ';'\n';'\t'
   ]
+
+let operators = prefix_operators @ [infix_operators]
 
 type automate = {
   mutable nb : int; (*cell number*)
@@ -84,7 +93,6 @@ let init_lexer () =
   List.iter (fun c -> Hashtbl.replace lexer.delta (0,c) q_numbers) numbers; (*0->numbers*)
   List.iter (fun c -> Hashtbl.replace lexer.delta (q_numbers,c) q_numbers) numbers; (*numbers->numbers*)
 
-
   (*Keywords*)
   List.iter2 _add_one_lexem lexique keywords;
   
@@ -97,7 +105,7 @@ let init_lexer () =
   Hashtbl.replace lexer.final q_vars (Some (LVar ""));
   List.iter (fun c -> Hashtbl.replace lexer.delta (q_vars,c) q_vars) vars; (*var->var*) 
 
-  (*Add vars accecible from any destination:*)
+  (*Make vars accessible from any destination:*)
   let rec add_vars q =
       if q <> 0 && Hashtbl.find lexer.final q = None then
         Hashtbl.replace lexer.final q @@ Some(LVar "");
@@ -105,7 +113,10 @@ let init_lexer () =
         | None    -> Hashtbl.replace lexer.delta (q,c) q_vars (*q->var*)
         | Some q' -> if q <> q' then add_vars q'
     in
-    List.iter aux vars;
+    if q = 0 then
+      List.iter aux vars_start
+    else
+      List.iter aux vars
   in
   add_vars 0;
 
