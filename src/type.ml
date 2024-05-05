@@ -1,6 +1,6 @@
 type expression =
   | Var of string
-  | Const of int
+  | Number of int
   | Op of string
   | Fun of string * expression
   | App of expression * expression
@@ -10,7 +10,7 @@ type expression =
 
 type lexem = 
   | End | LNothing
-  | LConst of string
+  | LNumber of string
   | LVar of string
   | LOp of int*string (*the int is the prority, higher for more priority*)
   | LFun

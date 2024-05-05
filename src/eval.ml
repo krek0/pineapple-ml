@@ -1,9 +1,9 @@
 open Type
 
-(*e[x<-v]*)
+(*x by v in e*)
 let rec sub e x v = match e with
-  | Var y when y = x  -> v
-  | Const _ | Op _ | Var _ | True | False -> e
+  | Var y when y = x -> v
+  | Number _ | Op _ | Var _ | True | False -> e
   | Fun (y,_) when y = x -> e
   | Fun (y,e1) -> Fun(y,sub e1 x v)
   | App (e1,e2) -> App(sub e1 x v, sub e2 x v)
@@ -12,7 +12,7 @@ let rec sub e x v = match e with
   | Let(y,e1,e2) -> Let(y,sub e1 x v, sub e2 x v)
 
 let rec eval e = match e with
-  | Const _ | Op _ | Fun _ | True | False -> e
+  | Number _ | Op _ | Fun _ | True | False -> e
   | Pair(e1,e2) -> Pair(eval e1, eval e2)
   | Let(x,e1,e2) -> eval @@ sub e2 x (eval e1)
   | App (e1,e2) -> (
@@ -35,44 +35,44 @@ let rec eval e = match e with
             | _ -> failwith "eval ||" )
         | Op "+" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> Const(n1+n2)
+            | Pair(Number n1, Number n2) -> Number(n1+n2)
             | _ -> failwith "eval +" )
         | Op "-" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> Const(n1-n2)
-            | Const n -> Const(-n)
+            | Pair(Number n1, Number n2) -> Number(n1-n2)
+            | Number n -> Number(-n)
             | _ -> failwith "eval -" )
         | Op "*" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> Const(n1*n2)
+            | Pair(Number n1, Number n2) -> Number(n1*n2)
             | _ -> failwith "eval *" )
         | Op "/" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> Const(n1/n2)
+            | Pair(Number n1, Number n2) -> Number(n1/n2)
             | _ -> failwith "eval /" )
         | Op "%" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> Const(n1 mod n2)
+            | Pair(Number n1, Number n2) -> Number(n1 mod n2)
             | _ -> failwith "eval %" )
         | Op "=" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> if n1=n2 then True else False
+            | Pair(Number n1, Number n2) -> if n1=n2 then True else False
             | _ -> failwith "eval =" )
         | Op "<" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> if n1<n2 then True else False
+            | Pair(Number n1, Number n2) -> if n1<n2 then True else False
             | _ -> failwith "eval <" )
         | Op "<=" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> if n1<=n2 then True else False
+            | Pair(Number n1, Number n2) -> if n1<=n2 then True else False
             | _ -> failwith "eval <=" )
         | Op ">" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> if n1>n2 then True else False
+            | Pair(Number n1, Number n2) -> if n1>n2 then True else False
             | _ -> failwith "eval >" )
         | Op ">=" -> (
           match eval e2 with
-            | Pair(Const n1, Const n2) -> if n1>=n2 then True else False
+            | Pair(Number n1, Number n2) -> if n1>=n2 then True else False
             | _ -> failwith "eval >=" )
         | Op "fst" -> (
           match eval e2 with
@@ -94,9 +94,3 @@ let rec eval e = match e with
         | _ -> failwith "eval operator"
     )
   | _ -> failwith "eval error"
-
-(*
-let plus_1 = Fun("x",App( Op("+"),Pair(Var("x"),Const(1))));;
-let fix = Fun("f",App(Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y"))))),Fun("x",App(Var "f", Fun("y",App(Var"x",App(Var "x", Var "y")))))));;
-let fact = recc "fact" "n" @@ iff (App(Op "=", Pair(Var "n", Const 0))) (Const 1) (App(Op "*", Pair(Var "n",App(Var "fact",App(Op "+",Pair(Var "n",Const (-1)))))))
-*)

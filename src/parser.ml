@@ -2,10 +2,13 @@ open Type
 
 (*number of priority*)
 let max_op = List.length Lexer.operators - 1
-(*List de tout les non terminaux qui seront*)
-(*nécessaire pour les derivations*)
+
+(*Aditional terminal symbol to operator priority*)
 let f = List.init max_op (fun i -> F (i+1))
+(*All operators lexems*)
 let op = List.init (max_op+1) (fun i -> LOp (i,""))
+let aditional_derivation = List.concat @@ List.init (max_op-1)
+  (fun i -> let i = i + 1 in [(F i,[F (i+1)]); (F i,[F i;LOp (i,"");F (i+1)])])
 
 let derivation = [
     (E,[F 1]);
@@ -20,24 +23,19 @@ let derivation = [
     (F (max_op),[LOp (1,"-");F max_op]); (*negatives numbers*)
     (F (max_op),[F max_op;G]);
   
-    (G,[LConst ""]);
+    (G,[LNumber ""]);
     (G,[LVar ""]);
     (G,[LTrue]);
     (G,[LFalse]);
     (G,[LLeftPar;E;LRightPar]);
     (G,[LLeftPar;E;LComma;E;LRightPar]);
-  ]
-
-let derivation = derivation @ List.concat @@ List.init (max_op-1)
-                              (fun i -> let i = i + 1 in
-                               [(F i,[F (i+1)]);
-                                (F i,[F i;LOp (i,"");F (i+1)])])
+  ] @ aditional_derivation
 
 let start = E
 
 let lexems = [
   End;
-  LConst "";
+  LNumber "";
   LVar "";
   LFun;
   LRec ; LArrow;
@@ -45,12 +43,13 @@ let lexems = [
   LIf ; LThen ; LElse;
   LLeftPar ; LRightPar ; LComma;
   E ; G; S]@op@f
-let non_terminaux = [E;G;S]@f
+
+let non_terminal = [E;G;S]@f
 
 let derivation_a = Array.of_list derivation
 let trd (_,_,z) = z
 
-(*Reduction (i,len), règle i en replacant len lexems*)
+(*Reduction (i,len), follow derivation i by replacing len lexems*)
 type action = Goto of int | Reduction of int*int | Success
 
 type automate = {
@@ -72,43 +71,43 @@ let remove_duplicates l =
   List.iter (fun x -> Hashtbl.replace d x 0) l;
   Hashtbl.fold (fun a b c -> a::c) d [];;
 
-let items = (S,[],[start])::List.map (fun e -> (fst e,[],snd e)) derivation
 
+(*defaults items*)
+let default_items = (S,[],[start])::List.map (fun e -> (fst e,[],snd e)) derivation
 
-let fermeture item =
+(*Return the closure of a list of item*)
+let closure items =
   let fst (x,_,_) = x in
-  (*Boucle tant qu'on peut rajouter des items*)
-  let rec aux item_aux =
-    (*trouve les non_terminaux qui vont sont just aprés le point*)
+  (*Do the operation while new item are added*)
+  let rec aux items_aux =
+    (*find none terminal at the beginig of the list*)
     let t = List.filter_map (fun e ->
         if List.is_empty @@ trd e then None
         else
           let h = List.hd @@ trd e in
-          if List.mem h non_terminaux then
+          if List.mem h non_terminal then
             Some h
           else None ) 
-      item_aux in
-    (*Ajoute item à sa fermeture*)
-    let new_item = remove_duplicates @@ item_aux @ List.filter (fun e -> List.mem (fst e) t ) items in
-    if List.length new_item = List.length item_aux then item_aux
+      items_aux in
+    let new_item = remove_duplicates @@ items_aux @ List.filter (fun e -> List.mem (fst e) t ) default_items in
+    if List.length new_item = List.length items_aux then items_aux
     else aux new_item
   in
-  aux item
+  aux items
 
+(*Return the next item list when chose lexem t*)
 let rec next_item item t =
   let rec aux acc e = match e with
     | (h,l1,tt::tl2)::tl when tt = t -> aux ((h,tt::l1,tl2)::acc) tl
     | _::tl -> aux acc tl
     | [] -> acc
   in
-  fermeture @@ aux [] item
+  closure @@ aux [] item
 
 
 let add_one_transition item l i =
   match Hashtbl.find_opt parser.items_to_int item with
-  (*Si l'item est déja présent*)
   | Some j -> Hashtbl.replace parser.actions (i,l) @@ Goto j; None
-  (*Sinon*)
   | None -> let j = parser.nb in
             parser.nb <- parser.nb + 1;
             Hashtbl.replace parser.actions (i,l) @@ Goto j;
@@ -117,12 +116,11 @@ let add_one_transition item l i =
             Some j
 
 let rec init_parser () =
-  (*Création des deplacement sur l'automate*)
-  Hashtbl.replace parser.items_to_int items 0;
-  Hashtbl.replace parser.int_to_items 0 items;
+  (*Goto creation*)
+  Hashtbl.replace parser.items_to_int default_items 0;
+  Hashtbl.replace parser.int_to_items 0 default_items;
   parser.nb <- 1;
   let rec add_transitions item i =
-    (*Les transitions à ajouter*)
     let t = remove_duplicates @@ List.filter_map (fun e -> if List.is_empty @@ trd e then None else Some (List.hd @@ trd e)) item in
     List.iter (fun lex -> let next_it = next_item item lex in
                           match add_one_transition next_it lex i with
@@ -130,23 +128,23 @@ let rec init_parser () =
                             | Some j -> add_transitions next_it j
               ) t
   in
-  add_transitions items 0;
+  add_transitions default_items 0;
   
-  (*Ajout des succés*)
+  (*Add succes*)
   for i = 0 to parser.nb - 1 do
     let item = Hashtbl.find parser.int_to_items i in
     if List.mem (S,[E],[]) item then
       Hashtbl.replace parser.actions (i,End) Success
   done;
 
-  (*Ajout des reductions*)
+  (*Add reductions*)
   for i = 1 to parser.nb - 1 do
     let item = Hashtbl.find parser.int_to_items i in
     List.iter (fun e -> match e with
       | (a,l,[]) when a <> S ->
             let j = Option.get @@ List.find_index ((=) (a,List.rev l)) derivation in
             let len = List.length l in
-            (*Si y a pas de go déja dispo alors réduction*)
+            (*Add reduction only when no go possible, (to change)*)
             List.iter (fun l -> if Hashtbl.find_opt parser.actions (i,l) = None then Hashtbl.replace parser.actions (i,l) @@ Reduction (j,len)) lexems
       | _ -> ()
     ) item
@@ -160,17 +158,18 @@ let rec cut l n = match l,n with
 
 type tree = T of lexem*(tree list) | L of lexem
 
+(*Return list of derivation used by a liste of lexem*)
 let make_parse_stack li =
     let input = Stack.create () in
     List.iter (fun e -> Stack.push e input) @@ List.rev li;
     let out = Stack.create () in
   
     let rec aux input pile = match input,pile with
-        (*Enleve les parametres aux vars,csts,op pour utiliser les règles derivations génériques*)
+        (*Remove lex seeting to use generics rules*)
       | e::r,i::r' ->( let e' = match e with
           | LVar _ -> LVar ""
-          | LConst _ -> LConst ""
-          (*Si = est l'opérateur d'atribution on le garde*)
+          | LNumber _ -> LNumber ""
+          (*To detect the = of atribution*)
           | LOp (j, s) -> (match Hashtbl.find_opt parser.actions (i,e) with
                             | Some _ -> e
                             | None -> LOp (j, "") )
@@ -189,7 +188,7 @@ let make_parse_stack li =
     aux li [0];
     out
 
-let make_tree input =
+let _make_tree input =
   let s = make_parse_stack input in
   let terminaux = Stack.create () in
     List.iter (fun e -> if e <> End then Stack.push e terminaux) input;
@@ -197,7 +196,7 @@ let make_tree input =
     let i = Stack.pop s in
     let l = List.map
             (fun e ->
-              if List.mem e non_terminaux then
+              if List.mem e non_terminal then
                 aux e
               else L (Stack.pop terminaux))
             @@ List.rev @@ snd derivation_a.(i) in
@@ -208,26 +207,28 @@ let make_tree input =
 (*if c then t else e*)
 let iff c t e = App(Op "opif", Pair(c,Pair(Fun("",t),Fun("",e))))
 
-let rec parse t =
-  match t with
-  | T (_,[L LLet;L LVar s ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (s,parse t1, parse t2)
-  | T (_,[L LIf;t1;L LThen;t2;L LElse;t3]) -> iff (parse t1) (parse t2) (parse t3)
-  | T (_,[L LFun;L LVar s;L LArrow;t]) -> Fun (s,parse t)
-  | T (_,[L LLet;L LRec;L LVar f ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (f,App(Op "opfix",Fun(f,parse t1)),parse t2)
+let rec parse input =
+  let tree = _make_tree input in
+  let rec aux t = match t with
+    | T (_,[L LLet;L LVar s ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (s,aux t1, aux t2)
+    | T (_,[L LIf;t1;L LThen;t2;L LElse;t3]) -> iff (aux t1) (aux t2) (aux t3)
+    | T (_,[L LFun;L LVar s;L LArrow;t]) -> Fun (s,aux t)
+    | T (_,[L LLet;L LRec;L LVar f ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (f,App(Op "opfix",Fun(f,aux t1)),aux t2)
   
-  | T (_,[L LOp (_,s);t]) -> App(Op s,parse t)
-  | T (_,[t1;t2]) -> App(parse t1,parse t2)
+    | T (_,[L LOp (_,s);t]) -> App(Op s,aux t)
+    | T (_,[t1;t2]) -> App(aux t1,aux t2)
 
-  | T (_,[L LConst s]) -> Const (int_of_string s)
-  | T (_,[L LVar s]) -> Var s
-  | T (_,[L LTrue]) -> True
-  | T (_,[L LFalse]) -> False
-  | T (_,[L LLeftPar;t; L LRightPar]) -> parse t
-  | T (_,[L LLeftPar;t1;L LComma;t2;L LRightPar]) -> Pair (parse t1, parse t2)
+    | T (_,[L LNumber s]) -> Number (int_of_string s)
+    | T (_,[L LVar s]) -> Var s
+    | T (_,[L LTrue]) -> True
+    | T (_,[L LFalse]) -> False
+    | T (_,[L LLeftPar;t; L LRightPar]) -> aux t
+    | T (_,[L LLeftPar;t1;L LComma;t2;L LRightPar]) -> Pair (aux t1, aux t2)
   
-  | T (_,[t1;L LOp (_,s);t2]) -> App (Op s, Pair(parse t1, parse t2))
-  | T (_,[t]) -> parse t
+    | T (_,[t1;L LOp (_,s);t2]) -> App (Op s, Pair(aux t1, aux t2))
+    | T (_,[t]) -> aux t
   
-  | _ -> failwith "parse"
-
+    | _ -> failwith "parse"
+  in
+  aux tree
 

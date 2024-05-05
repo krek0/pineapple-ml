@@ -18,6 +18,7 @@ let lexique = [
     "("; ")"; ","
   ]
 
+(*each sub-list represents progressively higher priorities*)
 let operators = [
     ["&&";"||"];
     ["=";">"; ">="; "<"; "<="];
@@ -32,7 +33,7 @@ let vars = [
   '_'
   ]
 
-let consts = [
+let numbers = [
   '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
   ]
 
@@ -40,48 +41,48 @@ let spaces = [
     ' ';'\n';'\t'
   ]
 
-exception LexingError
-
 type automate = {
   mutable nb : int; (*cell number*)
   final : (int, lexem option) Hashtbl.t;
   delta : (int * char, int) Hashtbl.t
 }
 
-let lexeur = {
+let lexer = {
   nb = 0;
   final = Hashtbl.create 0;
   delta = Hashtbl.create 0;
 }
 
+(*Add a transition from q with car a, return pointed cell*)
 let _add_transition q a =
-  match Hashtbl.find_opt lexeur.delta (q,a) with
+  match Hashtbl.find_opt lexer.delta (q,a) with
     | Some q' -> q'
-    | None -> lexeur.nb <- lexeur.nb + 1;
-              let q' = lexeur.nb in
-              Hashtbl.replace lexeur.final q' None;
-              Hashtbl.replace lexeur.delta (q,a) q';
+    | None -> lexer.nb <- lexer.nb + 1;
+              let q' = lexer.nb in
+              Hashtbl.replace lexer.final q' None;
+              Hashtbl.replace lexer.delta (q,a) q';
               q'
 
+(*Add the lexem l represented by the string l*)
 let _add_one_lexem s l =
   let n = String.length s in
   let rec aux i q =
     if i <> n then
       aux (i+1) @@ _add_transition q s.[i]
     else
-      Hashtbl.replace lexeur.final q @@ Some(l)
+      Hashtbl.replace lexer.final q @@ Some(l)
   in
   aux 0 0
 
 let init_lexer () =
-  Hashtbl.replace lexeur.final 0 None;
+  Hashtbl.replace lexer.final 0 None;
   
-  (*constants*)
-  lexeur.nb <- lexeur.nb + 1;
-  let q_consts = lexeur.nb in
-  Hashtbl.replace lexeur.final q_consts (Some (LConst ""));
-  List.iter (fun c -> Hashtbl.replace lexeur.delta (0,c) q_consts) consts; (*0->consts*)
-  List.iter (fun c -> Hashtbl.replace lexeur.delta (q_consts,c) q_consts) consts; (*consts->consts*)
+  (*Numbers*)
+  lexer.nb <- lexer.nb + 1;
+  let q_numbers = lexer.nb in
+  Hashtbl.replace lexer.final q_numbers (Some (LNumber ""));
+  List.iter (fun c -> Hashtbl.replace lexer.delta (0,c) q_numbers) numbers; (*0->numbers*)
+  List.iter (fun c -> Hashtbl.replace lexer.delta (q_numbers,c) q_numbers) numbers; (*numbers->numbers*)
 
 
   (*Keywords*)
@@ -91,17 +92,17 @@ let init_lexer () =
   List.iteri (fun i l -> List.iter (fun s -> _add_one_lexem s @@ LOp (i,s)) l) operators;
 
   (*vars*)
-  lexeur.nb <- lexeur.nb + 1;
-  let q_vars = lexeur.nb in
-  Hashtbl.replace lexeur.final q_vars (Some (LVar ""));
-  List.iter (fun c -> Hashtbl.replace lexeur.delta (q_vars,c) q_vars) vars; (*var->var*) 
+  lexer.nb <- lexer.nb + 1;
+  let q_vars = lexer.nb in
+  Hashtbl.replace lexer.final q_vars (Some (LVar ""));
+  List.iter (fun c -> Hashtbl.replace lexer.delta (q_vars,c) q_vars) vars; (*var->var*) 
 
   (*Add vars accecible from any destination:*)
   let rec add_vars q =
-      if q <> 0 && Hashtbl.find lexeur.final q = None then
-        Hashtbl.replace lexeur.final q @@ Some(LVar "");
-      let aux c = match Hashtbl.find_opt lexeur.delta (q,c) with
-        | None    -> Hashtbl.replace lexeur.delta (q,c) q_vars (*q->var*)
+      if q <> 0 && Hashtbl.find lexer.final q = None then
+        Hashtbl.replace lexer.final q @@ Some(LVar "");
+      let aux c = match Hashtbl.find_opt lexer.delta (q,c) with
+        | None    -> Hashtbl.replace lexer.delta (q,c) q_vars (*q->var*)
         | Some q' -> if q <> q' then add_vars q'
     in
     List.iter aux vars;
@@ -109,19 +110,19 @@ let init_lexer () =
   add_vars 0;
 
   (*Skip spaces*)
-  List.iter (fun c -> Hashtbl.replace lexeur.delta (0,c) 0) spaces
+  List.iter (fun c -> Hashtbl.replace lexer.delta (0,c) 0) spaces
 
 let _next_lexem s i =
   let n = String.length s in
   let conclude j q =
-    match Hashtbl.find lexeur.final q with
+    match Hashtbl.find lexer.final q with
       | Some l -> (
                     match l with
                     | LVar _    -> (j,LVar  (String.trim @@ String.sub s i (j-i)))
-                    | LConst _  -> (j,LConst (String.trim @@ String.sub s i (j-i)))
+                    | LNumber _  -> (j,LNumber (String.trim @@ String.sub s i (j-i)))
                     | _         -> (j,l)
                   )
-      | None   -> raise LexingError
+      | None   -> failwith "lexing"
   in
   (*Find the lexem*)
   let rec aux j q =
@@ -132,7 +133,7 @@ let _next_lexem s i =
           conclude j q
       else
       (
-        match Hashtbl.find_opt lexeur.delta (q,s.[j]) with
+        match Hashtbl.find_opt lexer.delta (q,s.[j]) with
           | None   -> conclude j q
           | Some q -> aux (j+1) q
       )

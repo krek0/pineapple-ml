@@ -6,7 +6,7 @@ let read_file f =
   In_channel.with_open_bin f In_channel.input_all
 
 let run s =
-  eval @@ parse @@ make_tree @@ lex s
+  eval @@ parse @@ lex s
   
 let run_file f =
   run @@ read_file f
