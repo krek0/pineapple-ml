@@ -77,17 +77,23 @@ let trd (_,_,z) = z
 let fst (x,_,_) = x
 
 let fermeture item =
-  (*trouve les non_terminaux qui vont sont just aprés le point*)
-  let t = List.filter_map (fun e ->
-      if List.is_empty @@ trd e then None
-      else
-        let h = List.hd @@ trd e in
-        if List.mem h non_terminaux then
-          Some h
-        else None ) 
-    item in
-  (*Ajoute item à sa fermeture*)
-  remove_duplicates @@ item @ List.filter (fun e -> List.mem (fst e) t ) items
+  (*Boucle tant qu'on peut rajouter des items*)
+  let rec aux item_aux =
+    (*trouve les non_terminaux qui vont sont just aprés le point*)
+    let t = List.filter_map (fun e ->
+        if List.is_empty @@ trd e then None
+        else
+          let h = List.hd @@ trd e in
+          if List.mem h non_terminaux then
+            Some h
+          else None ) 
+      item_aux in
+    (*Ajoute item à sa fermeture*)
+    let new_item = remove_duplicates @@ item_aux @ List.filter (fun e -> List.mem (fst e) t ) items in
+    if List.length new_item = List.length item_aux then item_aux
+    else aux new_item
+  in
+  aux item
 
 let rec next_item item t =
   let rec aux acc e = match e with
@@ -95,7 +101,7 @@ let rec next_item item t =
     | _::tl -> aux acc tl
     | [] -> acc
   in
-  fermeture @@ fermeture @@ fermeture @@ fermeture @@ fermeture @@ aux [] item
+  fermeture @@ aux [] item
 
 
 let add_one_transition item l i =
@@ -221,7 +227,7 @@ let rec parse t = match t with
   | T (10,l,[T(_,LConst s,[])]) -> Const (int_of_string s)
   | T (11,l,[T(_,LVar s,[])]) -> Var s
   | T (12,l,[T(_,LTrue,[])]) -> True
-  | T (13,l,[T(_,LFalse,[])]) -> True
+  | T (13,l,[T(_,LFalse,[])]) -> False
   | T (14,_,[_;t;_]) -> parse t
   | T (15,_,[_;t1;_;t2;_]) -> Pair (parse t1, parse t2)
   
