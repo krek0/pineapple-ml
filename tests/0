@@ -1,0 +1,8 @@
+print 0;
+let rec f = fun n ->
+    if n = 0 then
+		1
+	else
+		n * f (n-1)
+in
+print (f 10=3_628_800);

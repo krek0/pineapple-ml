@@ -1,4 +1,5 @@
 open Type
+open Print
 
 (*x by v in e*)
 let rec sub e x v = match e with
@@ -21,11 +22,8 @@ let rec eval e = match e with
       match eval e1 with
         | Fun(x,e) -> eval @@ sub e x (eval e2)
         | Op "print" -> (
-          match eval e2 with
-            | Number i -> print_int i; print_newline (); Unit
-            | True -> print_string "true"; print_newline (); Unit
-            | False -> print_string "false"; print_newline (); Unit
-            | _ -> failwith "eval print" )
+          let e2' = eval e2 in
+            print_expression e2'; print_newline (); Unit)
         (*Lazy evaluation for && and ||*)
         | Op "&&" -> (
           match e2 with
@@ -64,7 +62,7 @@ let rec eval e = match e with
             | _ -> failwith "eval %" )
         | Op "=" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> if n1=n2 then True else False
+            | Pair(n1, n2) -> if n1=n2 then True else False
             | _ -> failwith "eval =" )
         | Op "<" -> (
           match eval e2 with

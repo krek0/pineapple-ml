@@ -1,0 +1,2 @@
+print 3;
+print (() = () && true = true && 1_12_3 = 1123 && let a = 5 in a = 5)

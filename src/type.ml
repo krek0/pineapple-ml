@@ -6,6 +6,8 @@ type expression =
   | App of expression * expression
   | Pair of expression * expression
   | Let of string * expression * expression
+  | Multiple of expression * expression
+  | Unit
   | True | False
 
 type lexem = 
@@ -19,4 +21,6 @@ type lexem =
   | LIf | LThen | LElse
   | LLeftPar | LRightPar | LComma
   | LTrue | LFalse
+  | LUnit
+  | LSemicolon
   | E | F of int | G | S

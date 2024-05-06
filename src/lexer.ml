@@ -6,7 +6,9 @@ let keywords = [
   LLet; LIn;
   LIf; LThen; LElse;
   LTrue; LFalse;
-  LLeftPar; LRightPar; LComma
+  LUnit;
+  LLeftPar; LRightPar; LComma;
+  LSemicolon
 ]
 
 let lexique = [
@@ -15,7 +17,9 @@ let lexique = [
     "let"; "in";
     "if"; "then"; "else";
     "true"; "false";
-    "("; ")"; ","
+    "()";
+    "("; ")"; ",";
+    ";"
   ]
 
 (*each sub-list represents progressively higher priorities*)
@@ -24,11 +28,10 @@ let prefix_operators = [
     ["=";">"; ">="; "<"; "<="];
     ["+";"-"];
     ["*";"/";"%"];
-    ["fst";"snd"] (*prefix operators (except -)*)
   ]
 
 let infix_operators =
-  ["fst";"snd"]
+  ["fst";"snd";"print"]
 
 let vars = [
   'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';'u';'v';'w';'x';'y';'z';

@@ -1,32 +1,36 @@
 open Type
 
 (*number of priority*)
-let max_op = List.length Lexer.operators - 1
+let max_op = List.length Lexer.operators
 
 (*Aditional terminal symbol to operator priority*)
-let f = List.init max_op (fun i -> F (i+1))
+let f = List.init max_op (fun i -> F i)
 (*All operators lexems*)
 let op = List.init (max_op+1) (fun i -> LOp (i,""))
 let aditional_derivation = List.concat @@ List.init (max_op-1)
-  (fun i -> let i = i + 1 in [(F i,[F (i+1)]); (F i,[F i;LOp (i,"");F (i+1)])])
+  (fun i -> [(F i,[F (i+1)]); (F i,[F i;LOp (i,"");F (i+1)])])
 
 let derivation = [
-    (E,[F 1]);
-    (E,[LLet;LVar "";LOp (1,"=");E;LIn;E]);
-    (E,[LIf;E;LThen;E;LElse;E]);
-    (E,[LFun;LVar "";LArrow;E]);
-    (E,[LLet;LRec;LVar "";LOp (1,"=");E;LIn;E]);
-    (E,[E;LOp (0,"");F 1]);
+    (E,[F 0]);
+    
+    (E,[E;LSemicolon;E]);
+    (E,[E;LSemicolon]);
 
-    (F (max_op),[G]);
-    (F (max_op),[LOp (max_op,"");F max_op]);
-    (F (max_op),[LOp (1,"-");F max_op]); (*negatives numbers*)
-    (F (max_op),[F max_op;G]);
-  
+    (F (max_op-1),[G]);
+    (F (max_op-1),[LOp (max_op-1,"");F (max_op-1)]);
+    (F (max_op-1),[LOp (1,"-");F (max_op-1)]); (*negatives numbers*)
+    (F (max_op-1),[F (max_op-1);G]);
+
+    (G,[LLet;LVar "";LOp (1,"=");E;LIn;E]);
+    (G,[LIf;E;LThen;E;LElse;E]);
+    (G,[LFun;LVar "";LArrow;E]);
+    (G,[LLet;LRec;LVar "";LOp (1,"=");E;LIn;E]);
     (G,[LNumber ""]);
     (G,[LVar ""]);
     (G,[LTrue]);
     (G,[LFalse]);
+    (G,[LUnit]);
+    (G,[LLeftPar;LRightPar]);
     (G,[LLeftPar;E;LRightPar]);
     (G,[LLeftPar;E;LComma;E;LRightPar]);
   ] @ aditional_derivation
@@ -42,6 +46,8 @@ let lexems = [
   LLet ; LIn;
   LIf ; LThen ; LElse;
   LLeftPar ; LRightPar ; LComma;
+  LUnit;
+  LSemicolon;
   E ; G; S]@op@f
 
 let non_terminal = [E;G;S]@f
@@ -214,16 +220,21 @@ let rec parse input =
     | T (_,[L LIf;t1;L LThen;t2;L LElse;t3]) -> iff (aux t1) (aux t2) (aux t3)
     | T (_,[L LFun;L LVar s;L LArrow;t]) -> Fun (s,aux t)
     | T (_,[L LLet;L LRec;L LVar f ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (f,App(Op "opfix",Fun(f,aux t1)),aux t2)
+    | T (_,[t1;L LSemicolon;t2]) -> Multiple (aux t1, aux t2) 
+    | T (_,[t1;L LSemicolon]) -> aux t1 
   
     | T (_,[L LOp (_,s);t]) -> App(Op s,aux t)
-    | T (_,[t1;t2]) -> App(aux t1,aux t2)
 
     | T (_,[L LNumber s]) -> Number (int_of_string s)
     | T (_,[L LVar s]) -> Var s
     | T (_,[L LTrue]) -> True
     | T (_,[L LFalse]) -> False
+    | T (_,[L LUnit]) -> Unit
+    | T (_,[L LLeftPar; L LRightPar]) -> aux t
     | T (_,[L LLeftPar;t; L LRightPar]) -> aux t
     | T (_,[L LLeftPar;t1;L LComma;t2;L LRightPar]) -> Pair (aux t1, aux t2)
+
+    | T (_,[t1;t2]) -> App(aux t1,aux t2)
   
     | T (_,[t1;L LOp (_,s);t2]) -> App (Op s, Pair(aux t1, aux t2))
     | T (_,[t]) -> aux t
