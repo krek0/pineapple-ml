@@ -4,9 +4,14 @@ A small "mini ml" interpreter in ocaml
 The project is not yet usable
 
 # How to use
-Currently you have to do `make run` with utop installed on your computer
+
+## Interactively
+Do `make run` with utop installed on your computer
 
 Then you can do `run "<code>"`
+
+## Executable
+Do `make` to build then run the executable in builds/out with a file path at argument
 
 # Code example
 `let f = fun x -> x+12 in f 12`
