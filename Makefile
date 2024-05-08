@@ -5,7 +5,7 @@ SRC := src
 OUT := builds
 
 build: $(DEPS:%=$(SRC)/%) $(MAIN:%=$(SRC)/%)
-	ocamlc -I $(SRC) $^ -o $(OUT)/out
+	ocamlc -I $(SRC) $^ -o $(OUT)/pml
 
 run: $(DEPS:%=$(SRC)/%)
 	ocamlc -I $(SRC) -c $^

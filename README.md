@@ -25,5 +25,5 @@ Do `make` to build then run the executable in builds/out with a file path at arg
 - [ ] Change the way of handle operator priority
 - [ ] Add type support
 - [x] Make the binary usable with args
-- [ ] Add argument to binary
+- [x] Better args support
 - [ ] Add error messages

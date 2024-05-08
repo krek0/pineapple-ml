@@ -12,12 +12,43 @@ let run s =
 let run_file f =
   run @@ read_file f
 
+let debug = ref false
+let filename = ref ""
+let parse_args () =
+  let usage_msg = "A mini ml interpreter\n\n" ^ 
+                  "Usage: pml [-debug] <file>\n\n" ^
+                  "Arguments:" in
+  let speclist = [("-debug", Arg.Set debug, "Output debug information")] in
+  let get_filename name =
+    filename := name in
+  Arg.parse speclist get_filename usage_msg
+
 let () =
   init_lexer ();
   init_parser ();
-  if Array.length Sys.argv >= 2 then
-    if Sys.file_exists Sys.argv.(1) then
-      let input = read_file Sys.argv.(1) in
-      let parsed_input = parse @@ lex input in
-      print_expression @@ eval parsed_input;
-      print_newline ()
+
+  (*arg*)
+  parse_args ();
+  if !filename = "" then
+    (print_string "pml: missing file operand\n";
+    print_string "Try `pml --help` for more information.\n")
+  else
+  (
+  let input = read_file !filename in
+  if !debug then
+    let t0 = Sys.time () in
+    let lexed_input = lex input in
+    let t1 = Sys.time () in
+    let parsed_input = parse lexed_input in
+    let t2 = Sys.time () in
+    print_string "Evaluation:\n";
+    let res = eval parsed_input in
+    let t3 = Sys.time () in
+    print_string "\nResult:\n";
+    print_expression res;
+    print_endline "\n\nTime:";
+    Printf.printf "Lexing: %fms\nParsing: %fms\nEval: %fms\nTotal: %f ms\n"
+    (t1-.t0) (t2-.t1) (t3-.t2) (t3-.t0)
+  else
+    ignore @@ eval @@ parse @@ lex input
+  )

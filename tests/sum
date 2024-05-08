@@ -3,4 +3,7 @@ let rec sum = fun n ->
 	else
 		n + sum (n-1)
 in
-sum 10 + sum 100 + sum 1_000 + sum 10_000 + sum 100_000
+let a = sum 10 in
+let a = a + sum 100 in
+let a = a + a + sum 1_000 in
+print a
