@@ -11,7 +11,7 @@ Do `make run` with utop installed on your computer
 Then you can do `run "<code>"`
 
 ## Executable
-Do `make` to build then run the executable in builds/out with a file path at argument
+Usage: `pml [-debug] <file>`
 
 # Code example
 `let f = fun x -> x+12 in f 12`

@@ -18,7 +18,7 @@ let parse_args () =
   let usage_msg = "A mini ml interpreter\n\n" ^ 
                   "Usage: pml [-debug] <file>\n\n" ^
                   "Arguments:" in
-  let speclist = [("-debug", Arg.Set debug, "Output debug information")] in
+  let speclist = [("--debug", Arg.Set debug, "Output debug information")] in
   let get_filename name =
     filename := name in
   Arg.parse speclist get_filename usage_msg
@@ -36,14 +36,14 @@ let () =
   (
   let input = read_file !filename in
   if !debug then
-    let t0 = Sys.time () in
+    let t0 = 1000. *. Sys.time () in
     let lexed_input = lex input in
-    let t1 = Sys.time () in
+    let t1 = 1000. *. Sys.time () in
     let parsed_input = parse lexed_input in
-    let t2 = Sys.time () in
+    let t2 = 1000. *. Sys.time () in
     print_string "Evaluation:\n";
     let res = eval parsed_input in
-    let t3 = Sys.time () in
+    let t3 = 1000. *. Sys.time () in
     print_string "\nResult:\n";
     print_expression res;
     print_endline "\n\nTime:";
