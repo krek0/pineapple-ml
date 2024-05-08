@@ -18,13 +18,13 @@ let derivation = [
 
     (F (max_op-1),[G]);
     (F (max_op-1),[LOp (max_op-1,"");F (max_op-1)]);
-    (F (max_op-1),[LOp (1,"-");F (max_op-1)]); (*negatives numbers*)
+    (F (max_op-1),[LOp (0,"-");F (max_op-1)]); (*negatives numbers*)
     (F (max_op-1),[F (max_op-1);G]);
 
-    (G,[LLet;LVar "";LOp (1,"=");E;LIn;E]);
+    (G,[LLet;LVar "";LOp (0,"=");E;LIn;E]);
     (G,[LIf;E;LThen;E;LElse;E]);
     (G,[LFun;LVar "";LArrow;E]);
-    (G,[LLet;LRec;LVar "";LOp (1,"=");E;LIn;E]);
+    (G,[LLet;LRec;LVar "";LOp (0,"=");E;LIn;E]);
     (G,[LNumber ""]);
     (G,[LVar ""]);
     (G,[LTrue]);
@@ -176,8 +176,8 @@ let make_parse_stack li =
           | LVar _ -> LVar ""
           | LNumber _ -> LNumber ""
           (*To detect the = of atribution*)
-          | LOp (j, s) -> (match Hashtbl.find_opt parser.actions (i,e) with
-                            | Some _ -> e
+          | LOp (j, s) -> (match Hashtbl.find_opt parser.actions (i,LOp(0,s)) with
+                            | Some _ -> LOp(0,s)
                             | None -> LOp (j, "") )
           | _ -> e
         in

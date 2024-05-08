@@ -54,7 +54,7 @@ G ->| let var = E in E
 	| if E then E else E
 	| fun var -> E
 	| let rec var = E in E
-    |const
+    | const
 	| var
 	| true
 	| false
