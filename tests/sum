@@ -1,0 +1,6 @@
+let rec sum = fun n ->
+	if n = 0 then 0
+	else
+		n + sum (n-1)
+in
+sum 10 + sum 100 + sum 1_000 + sum 10_000 + sum 100_000
