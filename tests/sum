@@ -6,4 +6,5 @@ in
 let a = sum 10 in
 let a = a + sum 100 in
 let a = a + a + sum 1_000 in
+let a = a + a + sum 10_000 in
 print a
