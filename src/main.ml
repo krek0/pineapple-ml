@@ -11,7 +11,8 @@ let parse_args () =
   let usage_msg = "A mini ml interpreter\n\n" ^ 
                   "Usage: pml [-debug] <file>\n\n" ^
                   "Arguments:" in
-  let speclist = [("--debug", Arg.Set debug, "Output debug information")] in
+  let speclist = [("--verbose", Arg.Set debug, "Output debug information");
+                  ("-v", Arg.Set debug, "Same as --verbose")] in
   let get_filename name =
     filename := name in
   Arg.parse speclist get_filename usage_msg
