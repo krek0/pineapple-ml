@@ -9,7 +9,7 @@ let debug = ref false
 let filename = ref ""
 let parse_args () =
   let usage_msg = "A mini ml interpreter\n\n" ^ 
-                  "Usage: pml [-debug] <file>\n\n" ^
+                  "Usage: pml [--verbose] <file>\n\n" ^
                   "Arguments:" in
   let speclist = [("--verbose", Arg.Set debug, "Output debug information");
                   ("-v", Arg.Set debug, "Same as --verbose")] in
