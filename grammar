@@ -22,7 +22,7 @@ Terminal symbols: {var, const, let, in, if, then, else, fun, ->, op0, op1, op2, 
 Starting symbol: E
 
 Priority from highest to lowest:
-{>,>=,<,<=}
+{>,>=,<,<=,=}
 {+,-}
 {%,/,*}
 {fst,snd,-;print} (prefix)
