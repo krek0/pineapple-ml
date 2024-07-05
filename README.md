@@ -25,7 +25,7 @@ Usage: `pml [--debug] <file>`
 # Todo
 - [x] Cleanup
 - [ ] Change the way of handle operator priority
-- [ ] Add type support
+- [ ] Add type support (currently working on it)
 - [x] Make the binary usable with args
 - [x] Better args support
 - [ ] Add error messages
