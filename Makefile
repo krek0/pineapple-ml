@@ -1,9 +1,10 @@
 MAIN := main.ml
 DEPS := type.cmo lexer.cmo print.cmo eval.cmo parser.cmo run.cmo
+SOURCES := type.ml lexer.ml print.ml eval.ml parser.ml run.ml
 SRC := src
 OUT := builds/pml
 
-build: $(DEPS:%=$(SRC)/%) $(MAIN:%=$(SRC)/%)
+build: $(SOURCES:%=$(SRC)/%) $(MAIN:%=$(SRC)/%)
 	ocamlc -I $(SRC) $^ -o $(OUT)
 
 run: $(DEPS:%=$(SRC)/%)
