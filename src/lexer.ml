@@ -1,4 +1,6 @@
 open Type
+
+exception Lexing
   
 let keywords = [
   LFun;
@@ -136,7 +138,7 @@ let _next_lexem s i =
                     | LNumber _  -> (j,LNumber (String.trim @@ String.sub s i (j-i)))
                     | _         -> (j,l)
                   )
-      | None   -> failwith "lexing"
+      | None   -> raise Lexing
   in
   (*Find the lexem*)
   let rec aux j q =
