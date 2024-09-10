@@ -64,6 +64,10 @@ let rec eval e = match e with
           match eval e2 with
             | Pair(n1, n2) -> if n1=n2 then True else False
             | _ -> failwith "eval =" )
+        | Op "!=" -> (
+          match eval e2 with
+            | Pair(n1, n2) -> if n1<>n2 then True else False
+            | _ -> failwith "eval =" )
         | Op "<" -> (
           match eval e2 with
             | Pair(Number n1, Number n2) -> if n1<n2 then True else False
