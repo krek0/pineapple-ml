@@ -220,8 +220,8 @@ let rec parse input =
     | T (_,[L LIf;t1;L LThen;t2;L LElse;t3]) -> iff (aux t1) (aux t2) (aux t3)
     | T (_,[L LFun;L LVar s;L LArrow;t]) -> Fun (s,aux t)
     | T (_,[L LLet;L LRec;L LVar f ;L (LOp (1,"="));t1;L LIn;t2]) -> Let (f,App(Op "opfix",Fun(f,aux t1)),aux t2)
-    | T (_,[t1;L LSemicolon;t2]) -> Multiple (aux t1, aux t2) 
-    | T (_,[t1;L LSemicolon]) -> aux t1 
+    | T (_,[t1;L LSemicolon;t2]) -> Pair (aux t1, aux t2) 
+    | T (_,[t1;L LSemicolon]) -> Pair(aux t1, Unit)
   
     | T (_,[L LOp (_,s);t]) -> App(Op s,aux t)
 

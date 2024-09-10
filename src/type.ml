@@ -6,7 +6,6 @@ type expression =
   | App of expression * expression
   | Pair of expression * expression
   | Let of string * expression * expression
-  | Multiple of expression * expression
   | Unit
   | True | False
 

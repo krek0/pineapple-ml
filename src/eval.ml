@@ -11,11 +11,9 @@ let rec sub e x v = match e with
   | Pair (e1,e2) -> Pair(sub e1 x v, sub e2 x v)
   | Let(y,e1,e2) when y = x -> Let(y,sub e1 x v,e2)
   | Let(y,e1,e2) -> Let(y,sub e1 x v, sub e2 x v)
-  | Multiple(e1,e2) -> Multiple(sub e1 x v,sub e2 x v)
 
 let rec eval e = match e with
   | Number _ | Op _ | Fun _ | True | False | Unit -> e
-  | Multiple(e1,e2) -> ignore @@ eval e1; eval e2
   | Pair(e1,e2) -> Pair(eval e1, eval e2)
   | Let(x,e1,e2) -> eval @@ sub e2 x (eval e1)
   | App (e1,e2) -> (

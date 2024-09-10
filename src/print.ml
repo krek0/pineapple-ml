@@ -23,7 +23,6 @@ let rec exp_to_str = function
                     ^ exp_to_str e2 ^ ")"
   | Let (s,e1,e2) -> "let " ^ s ^ " = " ^ exp_to_str e1
                      ^ " in " ^ exp_to_str e2
-  | Multiple (e1,e2) -> exp_to_str e1 ^ "; " ^ exp_to_str e2
   | Unit -> "()"
   | True -> "true"
   | False -> "false"
