@@ -25,7 +25,7 @@ let lexique = [
 (*each sub-list represents progressively higher priorities*)
 let prefix_operators = [
     ["&&";"||"];
-    ["=";">"; ">="; "<"; "<="];
+    ["=";">"; ">="; "<"; "<="; "!="];
     ["+";"-"];
     ["*";"/";"%"];
   ]
