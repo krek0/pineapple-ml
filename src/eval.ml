@@ -21,86 +21,85 @@ let rec eval e = match e with
   | Let(x,e1,e2) -> eval @@ sub e2 x (eval e1)
   | App (e1,e2) -> (
       match eval e1 with
-        | Fun(x,e) -> eval @@ sub e x (eval e2)
-        | Op "print" -> (
+      | Fun(x,e) -> eval @@ sub e x (eval e2)
+      | Op "print" -> (
           let e2' = eval e2 in
-            print_expression e2'; print_newline (); Unit)
-        (*Lazy evaluation for && and ||*)
-        | Op "&&" -> (
+          print_expression e2'; print_newline (); Unit)
+      (*Lazy evaluation for && and ||*)
+        | Op "&&" ->(
           match e2 with
-            | Pair(f,s) -> (
-                if eval f = False then False
-                else if eval s = False then False else True
-              )
-            | _ -> raise @@ Operator_evaluation "&&" )
-        | Op "||" -> (
+          | Pair(f,s) ->
+              if eval f = False then False
+              else if eval s = False then False else True
+          | _ -> raise @@ Operator_evaluation "&&" )
+      | Op "||" -> (
           match e2 with
-            | Pair(f,s) -> (
-                if eval f = True then True
-                else if eval s = True then True else False
-              )
-            | _ -> raise @@ Operator_evaluation "||" )
-        | Op "+" -> (
+          | Pair(f,s) ->
+              if eval f = True then True
+              else if eval s = True then True else False
+          | _ -> raise @@ Operator_evaluation "||" )
+      | Op "+" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> Number(n1+n2)
-            | _ -> raise @@ Operator_evaluation "+" )
-        | Op "-" -> (
+          | Pair(Number n1, Number n2) -> Number(n1+n2)
+          | _ -> raise @@ Operator_evaluation "+" )
+      | Op "-" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> Number(n1-n2)
-            | Number n -> Number(-n)
-            | _ -> raise @@ Operator_evaluation "-" )
-        | Op "*" -> (
+          | Pair(Number n1, Number n2) -> Number(n1-n2)
+          | Number n -> Number(-n)
+          | _ -> raise @@ Operator_evaluation "-" )
+      | Op "*" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> Number(n1*n2)
-            | _ -> raise @@ Operator_evaluation "*" )
-        | Op "/" -> (
+          | Pair(Number n1, Number n2) -> Number(n1*n2)
+          | _ -> raise @@ Operator_evaluation "*" )
+      | Op "/" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> Number(n1/n2)
-            | _ -> raise @@ Operator_evaluation "/" )
-        | Op "%" -> (
+          | Pair(Number n1, Number n2) -> Number(n1/n2)
+          | _ -> raise @@ Operator_evaluation "/" )
+      | Op "%" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> Number(n1 mod n2)
-            | _ -> raise @@ Operator_evaluation "%" )
-        | Op "=" -> (
+          | Pair(Number n1, Number n2) -> Number(n1 mod n2)
+          | _ -> raise @@ Operator_evaluation "%" )
+      | Op "=" -> (
           match eval e2 with
-            | Pair(n1, n2) -> if n1=n2 then True else False
-            | _ -> raise @@ Operator_evaluation "=" )
-        | Op "!=" -> (
+          | Pair(n1, n2) -> if n1=n2 then True else False
+          | _ -> raise @@ Operator_evaluation "=" )
+      | Op "!=" -> (
           match eval e2 with
-            | Pair(n1, n2) -> if n1<>n2 then True else False
-            | _ -> raise @@ Operator_evaluation "=" )
-        | Op "<" -> (
+          | Pair(n1, n2) -> if n1<>n2 then True else False
+          | _ -> raise @@ Operator_evaluation "=" )
+      | Op "<" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> if n1<n2 then True else False
-            | _ -> raise @@ Operator_evaluation "<" )
-        | Op "<=" -> (
+          | Pair(Number n1, Number n2) -> if n1<n2 then True else False
+          | _ -> raise @@ Operator_evaluation "<" )
+      | Op "<=" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> if n1<=n2 then True else False
-            | _ -> raise @@ Operator_evaluation "<=" )
-        | Op ">" -> (
+          | Pair(Number n1, Number n2) -> if n1<=n2 then True else False
+          | _ -> raise @@ Operator_evaluation "<=" )
+      | Op ">" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> if n1>n2 then True else False
-            | _ -> raise @@ Operator_evaluation ">" )
-        | Op ">=" -> (
+          | Pair(Number n1, Number n2) -> if n1>n2 then True else False
+          | _ -> raise @@ Operator_evaluation ">" )
+      | Op ">=" -> (
           match eval e2 with
-            | Pair(Number n1, Number n2) -> if n1>=n2 then True else False
-            | _ -> raise @@ Operator_evaluation ">=" )
-        | Op "fst" -> (
+          | Pair(Number n1, Number n2) -> if n1>=n2 then True else False
+          | _ -> raise @@ Operator_evaluation ">=" )
+      | Op "fst" -> (
           match eval e2 with
-            | Pair(v1,v2) -> v1
-            | _ -> raise @@ Operator_evaluation "fst" )
-        | Op "snd" -> (
+          | Pair(v1,v2) -> v1
+          | _ -> raise @@ Operator_evaluation "fst" )
+      | Op "snd" -> (
           match eval e2 with
-            | Pair(v1,v2) -> v2
-            | _ -> raise @@ Operator_evaluation "snd" )
-        (*Lazy evaluation by having vtrue and vfalse in abstraction*)
-        | Op "opif" -> (
+          | Pair(v1,v2) -> v2
+          | _ -> raise @@ Operator_evaluation "snd" )
+      (*Lazy evaluation by having vtrue and vfalse in abstraction*)
+      | Op "opif" -> (
           match eval e2 with
-            | Pair(c, Pair(Fun(_,vtrue), Fun (_,vfalse))) -> if c = True then eval vtrue else eval vfalse
-            | _ -> raise @@ Operator_evaluation "if" )
-        | Op "opfix" -> (
+          | Pair(c, Pair(Fun(_,vtrue), Fun (_,vfalse))) -> if c = True then eval vtrue else eval vfalse
+          | _ -> raise @@ Operator_evaluation "if" )
+      | Op "opfix" -> (
           match eval e2 with
-            | Fun(f,e) -> eval @@ sub e f (App((Op "opfix"),Fun(f,e)))
-            | _ -> raise @@ Operator_evaluation "fix" )
-        | _ -> raise @@ Operator_evaluation "Unkown operator"
+          | Fun(f,e) -> eval @@ sub e f (App((Op "opfix"),Fun(f,e)))
+          | _ -> raise @@ Operator_evaluation "fix" )
+      | Op op -> raise @@ Operator_evaluation ("Unkown operator: " ^ op)
+      | _ -> raise @@ Operator_evaluation "Unkown application"
     )
