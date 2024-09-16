@@ -15,7 +15,8 @@ let rec sub e x v = match e with
   | Let(y,e1,e2) -> Let(y,sub e1 x v, sub e2 x v)
 
 let rec eval e = match e with
-  | Var _ | Number _ | Op _ | Fun _ | True | False | Unit -> e
+  | Var _ -> failwith "eval var"
+  | Number _ | Op _ | Fun _ | True | False | Unit -> e
   | Pair(e1,e2) -> let e1' = eval e1 in let e2' = eval e2 in 
                    Pair(e1', e2')
   | Let(x,e1,e2) -> eval @@ sub e2 x (eval e1)
