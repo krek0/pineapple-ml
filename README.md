@@ -1,7 +1,7 @@
 # Pineapple ML
 A small "mini ml" interpreter in ocaml
 
-The lexer and parser are re coded, helped by [wikipedia](https://wikipedia.org), and for the interpreter part, I was helped by [this course](https://www.enseignement.polytechnique.fr/informatique/INF564/poly.pdf) by Jean-Christophe Filliâtre.
+The lexer and parser are re coded, helped by [wikipedia](https://wikipedia.org), and for the interpreter part, I was helped by [Types and Programming Languages](https://www.cis.upenn.edu/~bcpierce/tapl/) by Benjamin C. Pierce and [this course](https://www.enseignement.polytechnique.fr/informatique/INF564/poly.pdf) by Jean-Christophe Filliâtre.
 
 I am currently working on the type system.
 
