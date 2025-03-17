@@ -1,9 +1,9 @@
 # Pineapple ML
 A small "mini ml" interpreter in ocaml
 
-The goal is to do as many things as possible myself.
+The lexer and parser are re coded, helped by [wikipedia](https://wikipedia.org), and for the interpreter part, I was helped by [this course](https://www.enseignement.polytechnique.fr/informatique/INF564/poly.pdf) by Jean-Christophe Filliâtre.
 
-The lexer and parser are done by me, mostly helped by [wikipedia](https://wikipedia.org), and for the interpreter part, I was helped by [this course](https://www.enseignement.polytechnique.fr/informatique/INF564/poly.pdf) by Jean-Christophe Filliâtre.
+I am currently working on the type system.
 
 # How to use
 
